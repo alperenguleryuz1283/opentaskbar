@@ -467,6 +467,9 @@ internal static class SettingsAndAutoHideChecks
             var store = new DockSettingsStore(tempPath);
             var (migrated, error) = store.Load();
             check(error is null, $"Loading a v0.2.x settings file must migrate cleanly without error (got '{error}').");
+            check(!migrated.MirrorMainDock, "Older settings must keep the lightweight secondary dock by default.");
+            check(store.Save(migrated with { MirrorMainDock = true }) is null && store.Load().Settings.MirrorMainDock,
+                "The mirror setting must survive a settings reload.");
             check(migrated.Position == DockPosition.Left && migrated.Theme == AppTheme.Dark && Math.Abs(migrated.DockScale - 1.1) < 0.001,
                 "Migration must preserve user position, theme, and dock scale.");
             check(migrated.StatsMeters == (SystemMeters.Cpu | SystemMeters.Memory | SystemMeters.Gpu | SystemMeters.GpuTemperature),

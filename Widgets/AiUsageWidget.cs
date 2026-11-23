@@ -14,6 +14,8 @@ namespace OpenTaskbar.Widgets;
 /// <summary>One CLI quota meter for a single provider; it only polls while the widget is enabled.</summary>
 public sealed class AiUsageWidget : DockWidget
 {
+    private static readonly SharedWidgetRequest<(AiProviders Provider, DateTime Stamp), AiUsageService.LoadResult> SharedUsage =
+        new(TimeSpan.FromSeconds(25));
     private readonly AiProviders _provider;
     private readonly Func<AiProviders, CancellationToken, Task<(AiUsageReport?, string?)>>? _loader;
     private AiUsageReport? _report;
@@ -411,7 +413,8 @@ public sealed class AiUsageWidget : DockWidget
             if (Superseded() || !IsDue(stamp)) return;
             _lastLoadAt = DateTimeOffset.UtcNow;
             AiUsageService.LoadResult result;
-            if (_loader is null) result = await AiUsageService.LoadWithPolicyAsync(_provider, loading.Token);
+            if (_loader is null) result = await SharedUsage.ReadAsync((_provider, stamp),
+                () => AiUsageService.LoadWithPolicyAsync(_provider, CancellationToken.None), loading.Token);
             else
             {
                 var (report, error) = await _loader(_provider, loading.Token);

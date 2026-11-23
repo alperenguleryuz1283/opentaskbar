@@ -216,7 +216,7 @@ public partial class MainWindow
     /// <summary>Side docks: honors Auto/Pixels/Percent/Fill height modes and enables vertical scrolling on overflow.</summary>
     private void ResizeSideDockToContent()
     {
-        var available = _dockArea.Height > 0 ? _dockArea.Height : DisplayService.GetTargetDisplay(_preferences.Current.TargetDisplay).Height;
+        var available = _dockArea.Height > 0 ? _dockArea.Height : GetDockDisplay().Height;
         var marginV = DockSurface.Margin.Top + DockSurface.Margin.Bottom;
         var maximumSurfaceHeight = Math.Max(1, available - marginV);
         var verticalChrome = DockFrame.Padding.Top + DockFrame.Padding.Bottom + 4;

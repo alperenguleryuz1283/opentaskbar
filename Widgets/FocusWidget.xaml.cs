@@ -19,20 +19,28 @@ namespace OpenTaskbar.Widgets;
 /// </summary>
 public partial class FocusWidget : DockWidget
 {
-    private enum Phase { Focus, Break }
+    internal enum Phase { Focus, Break }
+
+    internal sealed class Session
+    {
+        public Phase CurrentPhase { get; set; }
+        public int Number { get; set; } = 1;
+        public int Completed { get; set; }
+        public int PresetMinutes { get; set; }
+        public TimeSpan Remaining { get; set; }
+        public TimeSpan FullLength { get; set; }
+        public long? StartedAt { get; set; }
+        public bool Initialized { get; set; }
+        public int ActiveViews { get; set; }
+        public event Action? Changed;
+        public void NotifyChanged() => Changed?.Invoke();
+    }
 
     private static readonly int[] FocusPresets = [15, 25, 50];
 
-    private Phase _phase = Phase.Focus;
-    private int _session = 1;
-    private int _completedSessions;
-    private int _activePresetMinutes;
-    private TimeSpan _remaining;
-    private TimeSpan _lastFullLength;
-    private long? _startedAt;
+    private readonly Session _state;
     private readonly TimeProvider _clock;
     private readonly DockFlyout _flyout = new();
-    private bool _initialized;
 
     private int _renderedSeconds = -1;
     private Phase? _renderedPhase;
@@ -54,9 +62,12 @@ public partial class FocusWidget : DockWidget
 
     public FocusWidget() : this(TimeProvider.System) { }
 
-    public FocusWidget(TimeProvider clock)
+    public FocusWidget(TimeProvider clock) : this(clock, new Session()) { }
+
+    internal FocusWidget(TimeProvider clock, Session state)
     {
         _clock = clock;
+        _state = state;
         InitializeComponent();
         _flyout.Closed += (_, _) =>
         {
@@ -89,29 +100,31 @@ public partial class FocusWidget : DockWidget
     {
         get
         {
-            if (_phase == Phase.Focus)
+            if (_state.CurrentPhase == Phase.Focus)
             {
-                var mins = _activePresetMinutes > 0 ? _activePresetMinutes : Settings.FocusMinutes;
+                var mins = _state.PresetMinutes > 0 ? _state.PresetMinutes : Settings.FocusMinutes;
                 return TimeSpan.FromMinutes(Math.Max(1, mins));
             }
             return TimeSpan.FromMinutes(Math.Max(1, Settings.FocusBreakMinutes));
         }
     }
 
-    private bool IsRunning => _startedAt is not null;
-    private TimeSpan CurrentRemaining => _startedAt is { } startedAt
-        ? _remaining - _clock.GetElapsedTime(startedAt)
-        : _remaining;
+    private bool IsRunning => _state.StartedAt is not null;
+    private TimeSpan CurrentRemaining => _state.StartedAt is { } startedAt
+        ? _state.Remaining - _clock.GetElapsedTime(startedAt)
+        : _state.Remaining;
 
     protected override void OnActivated()
     {
         UiText.Current.PropertyChanged += UiText_PropertyChanged;
-        if (!_initialized)
+        _state.ActiveViews++;
+        _state.Changed += Render;
+        if (!_state.Initialized)
         {
-            _activePresetMinutes = Settings.FocusMinutes;
-            _remaining = PhaseLength;
-            _lastFullLength = _remaining;
-            _initialized = true;
+            _state.PresetMinutes = Settings.FocusMinutes;
+            _state.Remaining = PhaseLength;
+            _state.FullLength = _state.Remaining;
+            _state.Initialized = true;
         }
         Render();
     }
@@ -120,10 +133,11 @@ public partial class FocusWidget : DockWidget
     {
         _flyout.Close();
         UiText.Current.PropertyChanged -= UiText_PropertyChanged;
-        if (IsRunning)
+        _state.Changed -= Render;
+        if (--_state.ActiveViews == 0 && IsRunning)
         {
-            _remaining = TimeSpan.FromTicks(Math.Max(0, CurrentRemaining.Ticks));
-            _startedAt = null;
+            _state.Remaining = TimeSpan.FromTicks(Math.Max(0, CurrentRemaining.Ticks));
+            _state.StartedAt = null;
         }
         Card.BeginAnimation(OpacityProperty, null);
     }
@@ -140,27 +154,27 @@ public partial class FocusWidget : DockWidget
 
     protected override void OnSettingsChanged()
     {
-        _session = Math.Min(_session, Settings.FocusSessions);
-        if (!_initialized || (!IsRunning && _remaining == _lastFullLength))
+        _state.Number = Math.Min(_state.Number, Settings.FocusSessions);
+        if (!_state.Initialized || (!IsRunning && _state.Remaining == _state.FullLength))
         {
-            _activePresetMinutes = Settings.FocusMinutes;
-            _remaining = PhaseLength;
-            _initialized = true;
+            _state.PresetMinutes = Settings.FocusMinutes;
+            _state.Remaining = PhaseLength;
+            _state.Initialized = true;
         }
 
-        _lastFullLength = PhaseLength;
+        _state.FullLength = PhaseLength;
         Render();
     }
 
     public override bool SupportsStaticPreview => true;
     protected override void OnRenderPreview()
     {
-        if (!_initialized)
+        if (!_state.Initialized)
         {
-            _activePresetMinutes = Settings.FocusMinutes;
-            _remaining = PhaseLength;
-            _lastFullLength = _remaining;
-            _initialized = true;
+            _state.PresetMinutes = Settings.FocusMinutes;
+            _state.Remaining = PhaseLength;
+            _state.FullLength = _state.Remaining;
+            _state.Initialized = true;
         }
         Render();
     }
@@ -176,24 +190,25 @@ public partial class FocusWidget : DockWidget
     {
         SystemSounds.Asterisk.Play();
         Pulse();
-        if (_phase == Phase.Focus)
+        if (_state.CurrentPhase == Phase.Focus)
         {
-            _completedSessions++;
+            _state.Completed++;
             StartPhase(Phase.Break, run: true);
         }
         else
         {
-            _session = _session >= Settings.FocusSessions ? 1 : _session + 1;
+            _state.Number = _state.Number >= Settings.FocusSessions ? 1 : _state.Number + 1;
             StartPhase(Phase.Focus, run: false);
         }
+        _state.NotifyChanged();
     }
 
     private void StartPhase(Phase phase, bool run)
     {
-        _phase = phase;
-        _remaining = PhaseLength;
-        _lastFullLength = _remaining;
-        _startedAt = run ? _clock.GetTimestamp() : null;
+        _state.CurrentPhase = phase;
+        _state.Remaining = PhaseLength;
+        _state.FullLength = _state.Remaining;
+        _state.StartedAt = run ? _clock.GetTimestamp() : null;
     }
 
     private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -221,7 +236,7 @@ public partial class FocusWidget : DockWidget
         var header = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         var sessionCount = new TextBlock
         {
-            Text = UiText.Format("FocusSessionsCount", _completedSessions),
+            Text = UiText.Format("FocusSessionsCount", _state.Completed),
             FontSize = 12,
             FontWeight = FontWeights.SemiBold,
             VerticalAlignment = VerticalAlignment.Center,
@@ -233,7 +248,7 @@ public partial class FocusWidget : DockWidget
 
         var title = new TextBlock
         {
-            Text = UiText.Get(_phase == Phase.Focus ? "Focus" : "Break"),
+            Text = UiText.Get(_state.CurrentPhase == Phase.Focus ? "Focus" : "Break"),
             FontSize = 12.5,
             FontWeight = FontWeights.Bold,
             VerticalAlignment = VerticalAlignment.Center
@@ -281,7 +296,7 @@ public partial class FocusWidget : DockWidget
         for (var i = 0; i < FocusPresets.Length; i++)
         {
             var mins = FocusPresets[i];
-            var isSelected = _phase == Phase.Focus && currentMins == mins;
+            var isSelected = _state.CurrentPhase == Phase.Focus && currentMins == mins;
             var presetBtn = new Button
             {
                 Content = UiText.Format("MinutesShort", mins),
@@ -290,12 +305,12 @@ public partial class FocusWidget : DockWidget
             presetBtn.SetResourceReference(StyleProperty, isSelected ? "WidgetFlyoutPrimaryButton" : "WidgetFlyoutActionButton");
             presetBtn.Click += (_, _) =>
             {
-                _phase = Phase.Focus;
-                _activePresetMinutes = mins;
-                _remaining = TimeSpan.FromMinutes(mins);
-                _lastFullLength = _remaining;
-                _startedAt = null;
-                Render();
+                _state.CurrentPhase = Phase.Focus;
+                _state.PresetMinutes = mins;
+                _state.Remaining = TimeSpan.FromMinutes(mins);
+                _state.FullLength = _state.Remaining;
+                _state.StartedAt = null;
+                _state.NotifyChanged();
                 if (_flyoutContainer is not null) PopulateFocusFlyout(_flyoutContainer);
             };
             presetsGrid.Children.Add(presetBtn);
@@ -332,23 +347,23 @@ public partial class FocusWidget : DockWidget
     {
         if (IsRunning)
         {
-            _remaining = TimeSpan.FromTicks(Math.Max(0, CurrentRemaining.Ticks));
-            _startedAt = null;
+            _state.Remaining = TimeSpan.FromTicks(Math.Max(0, CurrentRemaining.Ticks));
+            _state.StartedAt = null;
         }
         else
         {
-            if (_remaining <= TimeSpan.Zero) _remaining = PhaseLength;
-            _startedAt = _clock.GetTimestamp();
+            if (_state.Remaining <= TimeSpan.Zero) _state.Remaining = PhaseLength;
+            _state.StartedAt = _clock.GetTimestamp();
         }
 
-        Render();
+        _state.NotifyChanged();
     }
 
     private void Reset_Click(object sender, RoutedEventArgs e)
     {
-        _session = 1;
+        _state.Number = 1;
         StartPhase(Phase.Focus, run: false);
-        Render();
+        _state.NotifyChanged();
     }
 
     private string FormatRemaining()
@@ -388,11 +403,11 @@ public partial class FocusWidget : DockWidget
 
         if (_flyoutSessionCount is not null)
         {
-            _flyoutSessionCount.Text = UiText.Format("FocusSessionsCount", _completedSessions);
+            _flyoutSessionCount.Text = UiText.Format("FocusSessionsCount", _state.Completed);
         }
 
         var lang = UiText.Current.Language;
-        var phaseChanged = _renderedPhase != _phase;
+        var phaseChanged = _renderedPhase != _state.CurrentPhase;
         var runningChanged = _renderedRunning != IsRunning;
         var langChanged = _renderedLanguage != lang;
 
@@ -412,9 +427,9 @@ public partial class FocusWidget : DockWidget
             if (_flyoutToggleButton is not null) _flyoutToggleButton.Content = playLabel;
         }
 
-        Card.ToolTip = $"{UiText.Get(_phase == Phase.Focus ? "Focus" : "Break")} · {RemainingText.Text}";
+        Card.ToolTip = $"{UiText.Get(_state.CurrentPhase == Phase.Focus ? "Focus" : "Break")} · {RemainingText.Text}";
 
-        _renderedPhase = _phase;
+        _renderedPhase = _state.CurrentPhase;
         _renderedRunning = IsRunning;
         _renderedLanguage = lang;
     }

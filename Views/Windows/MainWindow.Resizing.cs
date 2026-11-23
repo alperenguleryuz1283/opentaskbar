@@ -25,7 +25,7 @@ public partial class MainWindow
 
     private void DockResizeThumb_DragDelta(object sender, DragDeltaEventArgs e)
     {
-        var availableWidth = _dockArea.Width > 0 ? _dockArea.Width : DisplayService.GetTargetDisplay(_preferences.Current.TargetDisplay).Width;
+        var availableWidth = _dockArea.Width > 0 ? _dockArea.Width : GetDockDisplay().Width;
         var margin = DockSurface.Margin;
         var maximumSurfaceWidth = Math.Max(1, availableWidth - margin.Left - margin.Right);
         var minimumSurfaceWidth = Math.Min(MinimumDockSurfaceWidth, maximumSurfaceWidth);
@@ -79,7 +79,7 @@ public partial class MainWindow
         e.Handled = true;
         _dockWidthOverride = null;
         var contentWidth = DockScrollViewer.MeasureContentWidth(DockContents);
-        var availableWidth = _dockArea.Width > 0 ? _dockArea.Width : DisplayService.GetTargetDisplay(_preferences.Current.TargetDisplay).Width;
+        var availableWidth = _dockArea.Width > 0 ? _dockArea.Width : GetDockDisplay().Width;
         var margin = DockSurface.Margin;
         var maximumSurfaceWidth = Math.Max(1, availableWidth - margin.Left - margin.Right);
         var hasWidgets = WidgetStrip.Children.OfType<UIElement>().Any(child => child.Visibility == Visibility.Visible);

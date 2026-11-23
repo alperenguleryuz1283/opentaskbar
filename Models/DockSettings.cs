@@ -178,6 +178,7 @@ public sealed record DockSettings(
     string? TargetDisplay = null,
     SecondaryAppScope SecondaryApps = SecondaryAppScope.CurrentMonitorOnly,
     bool SecondaryWidgets = true,
+    bool MirrorMainDock = false,
     DockEdge Edge = DockEdge.Bottom,
     // Changed from the dock itself, not the Settings edit buffer. Null stacks means "Downloads only".
     IReadOnlyList<string>? StackFolders = null,

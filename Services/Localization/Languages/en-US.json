@@ -479,6 +479,8 @@
   "TargetDisplayDescription": "Choose which display hosts the main dock with full widgets.",
   "TargetDisplayPrimary": "Primary display",
   "SecondaryApps": "Secondary display apps",
+  "MirrorMainDock": "Mirror the main dock",
+  "MirrorMainDockDescription": "Use the main dock layout, pinned apps and widgets on other displays.",
   "SecondaryAppsDescription": "Choose which open windows appear on secondary display docks.",
   "SecondaryAppsCurrent": "Windows on this display only",
   "SecondaryAppsAll": "All open windows",

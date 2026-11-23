@@ -17,6 +17,8 @@ public sealed class WeatherWidget : DockWidget
 {
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(2);
+    private static readonly SharedWidgetRequest<string, (WeatherReport? Report, string? Error)> SharedWeather =
+        new(TimeSpan.FromMinutes(1));
     private static readonly SolidColorBrush WarmSunBrush = Freeze(Color.FromRgb(0xE5, 0xAE, 0x5E));
     private static readonly SolidColorBrush RainBrush = Freeze(Color.FromRgb(0x6E, 0xAA, 0xF3));
 
@@ -140,7 +142,10 @@ public sealed class WeatherWidget : DockWidget
         }
         try
         {
-            var (report, error) = await WeatherService.LoadAsync(Settings.WeatherCity, Settings.Language, loading.Token);
+            var city = Settings.WeatherCity;
+            var language = Settings.Language;
+            var (report, error) = await SharedWeather.ReadAsync(key,
+                () => WeatherService.LoadAsync(city, language, CancellationToken.None), loading.Token);
             if (!ReferenceEquals(_loading, loading) || !IsActive || LocationKey != key) return;
             if (report is not null || _loadedFor != key) _report = report;
             if (error is not null && _loadedFor != key && !string.IsNullOrWhiteSpace(Settings.WeatherCity)) Report(error);
@@ -148,6 +153,7 @@ public sealed class WeatherWidget : DockWidget
             _loadedFor = key;
             Render();
         }
+        catch (OperationCanceledException) when (loading.IsCancellationRequested) { }
         finally
         {
             if (ReferenceEquals(_loading, loading))

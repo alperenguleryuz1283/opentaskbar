@@ -476,6 +476,8 @@
   "TargetDisplayDescription": "Tam widget takımına sahip ana dock'un yerleşeceği ekranı seçin.",
   "TargetDisplayPrimary": "Birincil ekran",
   "SecondaryApps": "İkinci ekran uygulamaları",
+  "MirrorMainDock": "Ana dock’u yansıt",
+  "MirrorMainDockDescription": "Ana dock’un düzenini, sabit uygulamalarını ve widget’larını diğer ekranlarda göster.",
   "SecondaryAppsDescription": "İkinci ekranlardaki dock üzerinde hangi pencerelerin listeleneceğini seçin.",
   "SecondaryAppsCurrent": "Yalnızca bu ekrandaki pencereler",
   "SecondaryAppsAll": "Tüm açık pencereler",

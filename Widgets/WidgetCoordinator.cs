@@ -110,7 +110,8 @@ public sealed class WidgetCoordinator : IDisposable
         Action<string> reportError,
         bool lazy = false,
         Func<DockWidget, bool>? canExpandInline = null,
-        Action<bool>? onHoverLayoutChanged = null)
+        Action<bool>? onHoverLayoutChanged = null,
+        Func<string, DockWidget>? createWidget = null)
     {
         _strip = strip;
         _reportError = reportError;
@@ -122,7 +123,7 @@ public sealed class WidgetCoordinator : IDisposable
             .Select(descriptor => new WidgetSlot(
                 descriptor.Id,
                 descriptor.LabelKey,
-                () => CreateWidget(descriptor.Id),
+                () => (createWidget ?? CreateWidget)(descriptor.Id),
                 s => IsCatalogEnabled(s, descriptor.Id)
                     || descriptor.AliasIds?.Any(alias => IsCatalogEnabled(s, alias)) == true))
             .ToList();

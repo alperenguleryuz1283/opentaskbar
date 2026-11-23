@@ -544,6 +544,7 @@ public partial class SettingsWindow : Window
             ShowOnAllMonitors = AllMonitorsToggle.IsChecked == true,
             SecondaryApps = (SecondaryAppsBox.SelectedItem as SecondaryAppChoice)?.Scope ?? SecondaryAppScope.CurrentMonitorOnly,
             SecondaryWidgets = SecondaryWidgetsToggle.IsChecked == true,
+            MirrorMainDock = MirrorMainDockToggle.IsChecked == true,
             CurrentDesktopOnly = CurrentDesktopToggle.IsChecked == true,
             CheckUpdates = UpdatesToggle.IsChecked == true,
             Edge = Enum.TryParse<DockEdge>(Choice(EdgeBox), out var edge) ? edge : DockEdge.Bottom,
@@ -612,8 +613,9 @@ public partial class SettingsWindow : Window
     private void UpdateMultiMonitorControls()
     {
         var allMonitors = AllMonitorsToggle.IsChecked == true;
+        MirrorMainDockRow.IsEnabled = allMonitors;
         SecondaryAppsRow.IsEnabled = allMonitors;
-        SecondaryWidgetsRow.IsEnabled = allMonitors;
+        SecondaryWidgetsRow.IsEnabled = allMonitors && MirrorMainDockToggle.IsChecked != true;
     }
 
     private void TargetDisplayBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1501,6 +1503,7 @@ public partial class SettingsWindow : Window
         AllMonitorsToggle.IsChecked = settings.ShowOnAllMonitors;
         LoadSecondaryAppChoices(settings.SecondaryApps);
         SecondaryWidgetsToggle.IsChecked = settings.SecondaryWidgets;
+        MirrorMainDockToggle.IsChecked = settings.MirrorMainDock;
         UpdateMultiMonitorControls();
         CurrentDesktopToggle.IsChecked = settings.CurrentDesktopOnly;
         UpdatesToggle.IsChecked = settings.CheckUpdates;
@@ -2771,6 +2774,7 @@ public partial class SettingsWindow : Window
             AllMonitorsToggle.IsChecked = defaults.ShowOnAllMonitors;
             LoadSecondaryAppChoices(defaults.SecondaryApps);
             SecondaryWidgetsToggle.IsChecked = defaults.SecondaryWidgets;
+            MirrorMainDockToggle.IsChecked = defaults.MirrorMainDock;
             UpdateMultiMonitorControls();
             _antigravityGroups = defaults.AntigravityGroups;
             UpdateAntigravityGroupCheckboxes();

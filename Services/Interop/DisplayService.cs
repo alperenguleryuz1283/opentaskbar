@@ -53,6 +53,14 @@ public static class DisplayService
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool EnumDisplayMonitors(nint hdc, nint lprcClip, MonitorEnumProc lpfnEnum, nint dwData);
 
+    [DllImport("user32.dll")]
+    private static extern nint MonitorFromWindow(nint window, uint flags);
+
+    internal static nint GetWindowMonitor(nint window) => MonitorFromWindow(window, 2);
+
+    internal static DisplayInfo? GetDisplay(nint monitor) =>
+        monitor == 0 ? null : GetDisplays().FirstOrDefault(display => display.Handle == monitor);
+
     [DllImport("shcore.dll")]
     private static extern uint GetDpiForMonitor(nint hmonitor, int dpiType, out uint dpiX, out uint dpiY);
 

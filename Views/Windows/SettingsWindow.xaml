@@ -404,6 +404,14 @@
                                         <TextBlock Text="{local:Loc AllMonitorsDescription}" Style="{StaticResource SettingsRowDescription}" />
                                     </StackPanel>
                                 </DockPanel></Border>
+                                <Border x:Name="MirrorMainDockRow" Style="{StaticResource SettingsRow}"><DockPanel>
+                                    <CheckBox x:Name="MirrorMainDockToggle" DockPanel.Dock="Right" Style="{StaticResource SettingsSwitch}"
+                                              AutomationProperties.Name="{local:Loc MirrorMainDock}" AutomationProperties.HelpText="{local:Loc MirrorMainDockDescription}" />
+                                    <StackPanel VerticalAlignment="Center" Margin="0,0,18,0">
+                                        <TextBlock Text="{local:Loc MirrorMainDock}" Style="{StaticResource SettingsRowLabel}" />
+                                        <TextBlock Text="{local:Loc MirrorMainDockDescription}" Style="{StaticResource SettingsRowDescription}" />
+                                    </StackPanel>
+                                </DockPanel></Border>
                                 <Border x:Name="SecondaryAppsRow" Style="{StaticResource SettingsRow}"><DockPanel>
                                     <ComboBox x:Name="SecondaryAppsBox" views:IconGlyph.Glyph="{StaticResource IconLayers}" DockPanel.Dock="Right" MinWidth="150" MaxWidth="230" Width="Auto" VerticalAlignment="Center"
                                               DisplayMemberPath="DisplayName"
