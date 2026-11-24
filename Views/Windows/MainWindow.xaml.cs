@@ -2848,13 +2848,14 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Free-form order tokens owned by permanent shell buttons (draggable via ShellDockDragData).</summary>
-    internal static readonly string[] ShellDockTokens = ["start", "search", "taskview", "tray", "peek", "bin"];
+    internal static readonly string[] ShellDockTokens = ["start", "search", "fjord-files", "taskview", "tray", "peek", "bin"];
 
     private IReadOnlyList<string> DefaultDockOrder(DockSettings settings)
     {
         var tokens = new List<string>();
         if (settings.StartPlacement != StartButtonPlacement.Hidden) tokens.Add("start");
         if (settings.ShowSearchButton) tokens.Add("search");
+        if (settings.ShowFjordFilesButton) tokens.Add("fjord-files");
         if (settings.ShowTaskViewButton) tokens.Add("taskview");
 
         var groupedPaths = (settings.AppGroups ?? []).SelectMany(g => g.ExecutablePaths)
@@ -2942,6 +2943,8 @@ public partial class MainWindow : Window
         if (string.Equals(token, "start", StringComparison.OrdinalIgnoreCase)) return StartButton;
         if (string.Equals(token, "search", StringComparison.OrdinalIgnoreCase))
             return _preferences.Current.ShowSearchButton ? SearchButton : null;
+        if (string.Equals(token, "fjord-files", StringComparison.OrdinalIgnoreCase))
+            return _preferences.Current.ShowFjordFilesButton ? FjordFilesButton : null;
         if (string.Equals(token, "taskview", StringComparison.OrdinalIgnoreCase))
             return _preferences.Current.ShowTaskViewButton ? TaskViewButton : null;
         if (string.Equals(token, "tray", StringComparison.OrdinalIgnoreCase))

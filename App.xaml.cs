@@ -25,6 +25,7 @@ public partial class App : Application
     private DevReloadService? _devReload;
     private WindowsPaletteListener? _paletteListener;
     private WindowsTaskbarPinMonitor? _taskbarPinMonitor;
+    private CancellationTokenSource? _fjordFilesActivation;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -124,6 +125,12 @@ public partial class App : Application
         StartupStopwatch.Mark("MainWindow constructed");
         MainWindow = mainWindow;
         mainWindow.Show();
+        if (!IsDev && !IsInspection)
+        {
+            _fjordFilesActivation = new CancellationTokenSource();
+            _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() => new FjordFilesWindow(path).Show()),
+                _fjordFilesActivation.Token);
+        }
         StartupStopwatch.Mark("MainWindow shown (first paint pending)");
         if (themeInstallError is not null)
             AppLog.Error($"Built-in theme installation: {themeInstallError}");
@@ -216,6 +223,8 @@ public partial class App : Application
             return;
         }
 
+        _fjordFilesActivation?.Cancel();
+        _fjordFilesActivation?.Dispose();
         TaskbarRecoveryWatchdog.NotifyCleanExit();
         SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
         Preferences.Changed -= Preferences_Changed;

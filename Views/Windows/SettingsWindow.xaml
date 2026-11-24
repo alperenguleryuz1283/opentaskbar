@@ -366,6 +366,14 @@
                                     </StackPanel>
                                 </DockPanel></Border>
                                 <Border Style="{StaticResource SettingsRow}"><DockPanel>
+                                    <CheckBox x:Name="FjordFilesButtonToggle" DockPanel.Dock="Right" Style="{StaticResource SettingsSwitch}"
+                                              AutomationProperties.Name="{local:FjordLoc Title}" AutomationProperties.HelpText="{local:FjordLoc DockDescription}" />
+                                    <StackPanel VerticalAlignment="Center" Margin="0,0,18,0">
+                                        <TextBlock Text="{local:FjordLoc Title}" Style="{StaticResource SettingsRowLabel}" />
+                                        <TextBlock Text="{local:FjordLoc DockDescription}" Style="{StaticResource SettingsRowDescription}" />
+                                    </StackPanel>
+                                </DockPanel></Border>
+                                <Border Style="{StaticResource SettingsRow}"><DockPanel>
                                     <CheckBox x:Name="TaskViewButtonToggle" DockPanel.Dock="Right" Style="{StaticResource SettingsSwitch}"
                                               AutomationProperties.Name="{local:Loc WidgetDesktops}" AutomationProperties.HelpText="{local:Loc TaskViewDescription}" />
                                     <StackPanel VerticalAlignment="Center" Margin="0,0,18,0">
