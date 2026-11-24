@@ -239,7 +239,7 @@ public partial class MainWindow
     private void OpenFjordFiles_Click(object sender, RoutedEventArgs e)
     {
         var display = _source is null ? null : DisplayService.GetDisplay(DisplayService.GetWindowMonitor(_source.Handle));
-        new FjordFilesWindow(null, display).Show();
+        FjordFilesWindow.Open(null, display);
     }
     private void OpenRunDialog_Click(object sender, RoutedEventArgs e) => ReportResult(ShellShortcuts.OpenRunDialog());
     private void OpenTerminal_Click(object sender, RoutedEventArgs e) => ReportResult(ShellShortcuts.OpenSystemTool("wt.exe"));

@@ -51,6 +51,13 @@ public partial class FjordFilesWindow : Window
         UpdateButtons();
     }
 
+    internal static void Open(string? path, DisplayInfo? display = null)
+    {
+        var window = new FjordFilesWindow(path, display);
+        window.Show();
+        NativeWindowTracker.Activate(new WindowInteropHelper(window).Handle);
+    }
+
     private void CenterOnDisplay(DisplayInfo display)
     {
         WindowStartupLocation = WindowStartupLocation.Manual;
@@ -111,7 +118,8 @@ public partial class FjordFilesWindow : Window
         UpdateButtons();
         try
         {
-            var expanded = Environment.ExpandEnvironmentVariables(target.Trim().Trim('"'));
+            var input = target.Trim().Trim('"');
+            var expanded = Path.IsPathFullyQualified(input) ? input : Environment.ExpandEnvironmentVariables(input);
             var path = IsComputerLocation(expanded) ? ComputerLocation
                 : Path.GetFullPath(expanded, _folder is not null && !IsComputerLocation(_folder)
                     ? _folder : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));

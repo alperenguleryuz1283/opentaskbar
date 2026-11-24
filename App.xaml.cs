@@ -128,7 +128,7 @@ public partial class App : Application
         if (!IsDev && !IsInspection)
         {
             _fjordFilesActivation = new CancellationTokenSource();
-            _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() => new FjordFilesWindow(path).Show()),
+            _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() => FjordFilesWindow.Open(path)),
                 _fjordFilesActivation.Token);
         }
         StartupStopwatch.Mark("MainWindow shown (first paint pending)");
