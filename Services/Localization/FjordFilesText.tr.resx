@@ -30,7 +30,7 @@
   <data name="PreviewPane" xml:space="preserve"><value>Önizleme bölmesi</value></data>
   <data name="PreviewHint" xml:space="preserve"><value>Önizleme bölmesi (F4)</value></data>
   <data name="Favorites" xml:space="preserve"><value>Hızlı erişim</value></data>
-  <data name="Volumes" xml:space="preserve"><value>Sürücüler</value></data>
+  <data name="Volumes" xml:space="preserve"><value>Konumlar</value></data>
   <data name="Name" xml:space="preserve"><value>Ad</value></data>
   <data name="Modified" xml:space="preserve"><value>Değiştirilme</value></data>
   <data name="Size" xml:space="preserve"><value>Boyut</value></data>

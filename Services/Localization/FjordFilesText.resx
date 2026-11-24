@@ -30,7 +30,7 @@
   <data name="PreviewPane" xml:space="preserve"><value>Preview pane</value></data>
   <data name="PreviewHint" xml:space="preserve"><value>Preview pane (F4)</value></data>
   <data name="Favorites" xml:space="preserve"><value>Quick access</value></data>
-  <data name="Volumes" xml:space="preserve"><value>Drives</value></data>
+  <data name="Volumes" xml:space="preserve"><value>Locations</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Modified" xml:space="preserve"><value>Modified</value></data>
   <data name="Size" xml:space="preserve"><value>Size</value></data>
