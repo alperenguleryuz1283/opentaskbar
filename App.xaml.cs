@@ -131,6 +131,7 @@ public partial class App : Application
             _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() =>
             {
                 if (Preferences.Current.FjordFilesEnabled) FjordFilesWindow.Open(path);
+                else FjordFilesActivation.OpenExplorerFallback(path);
             }),
                 _fjordFilesActivation.Token);
         }

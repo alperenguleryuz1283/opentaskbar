@@ -16,7 +16,12 @@ public static class Program
         var filesPath = openFiles ? args.ElementAtOrDefault(1) : null;
         var filesStore = openFiles ? new DockSettingsStore() : null;
         var filesSettings = filesStore?.Load().Settings;
-        if (filesSettings is not null && (!filesSettings.FjordFilesEnabled || FjordFilesActivation.TrySend(filesPath))) return;
+        if (filesSettings is { FjordFilesEnabled: false })
+        {
+            FjordFilesActivation.OpenExplorerFallback(filesPath);
+            return;
+        }
+        if (openFiles && FjordFilesActivation.TrySend(filesPath)) return;
 
         // Watchdog and --restore paths log before App.OnStartup; initialize first so their
         // diagnostics are not silently dropped (shell recovery was previously invisible in log.txt).
@@ -34,7 +39,11 @@ public static class Program
             UiText.Current.SetLanguage(filesSettings.Language);
             var files = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
             using var availability = new FjordFilesAvailability(filesStore, filesSettings.FjordFilesEnabled);
-            if (!availability.Refresh()) return;
+            if (!availability.Refresh())
+            {
+                FjordFilesActivation.OpenExplorerFallback(filesPath);
+                return;
+            }
             availability.Changed += enabled =>
             {
                 if (!enabled) FjordFilesWindow.CloseAll();

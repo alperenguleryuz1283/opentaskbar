@@ -24,7 +24,19 @@ internal static class FjordFilesFeatureChecks
         Check(!DockItemOrdering.ApplyPinnedGroups([token], reloaded).Contains(token) &&
             DockItemOrdering.ApplyPinnedGroups([token], reloaded with { FjordFilesEnabled = true }).Contains(token),
             "The saved dock entry must disappear while disabled and return when enabled.");
-        return 4;
+        var folder = Path.GetDirectoryName(path)!;
+        Check(FjordFilesActivation.GetExplorerFallbackLocation(folder) == folder &&
+            FjordFilesActivation.GetExplorerFallbackLocation($"\"{folder}\"") == folder,
+            "An explicit folder shortcut must retain its target when handed to Explorer.");
+        Check(FjordFilesActivation.GetExplorerFallbackLocation("shell:MyComputerFolder") == "shell:MyComputerFolder" &&
+            FjordFilesActivation.GetExplorerFallbackLocation("::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") == "shell:MyComputerFolder",
+            "This PC must retain its native Explorer target.");
+        Check(FjordFilesActivation.GetExplorerFallbackLocation(null) is null &&
+            FjordFilesActivation.GetExplorerFallbackLocation("  ") is null &&
+            FjordFilesActivation.GetExplorerFallbackLocation(path) is null &&
+            FjordFilesActivation.GetExplorerFallbackLocation(Path.Combine(folder, "missing")) is null,
+            "A bare command, a file, or a missing folder must not trigger the Explorer fallback.");
+        return 7;
     });
 
     internal static int RunUi() => WithStore((store, path) =>

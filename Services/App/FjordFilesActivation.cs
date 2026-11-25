@@ -14,6 +14,36 @@ internal static class FjordFilesActivation
     private const int MaximumPathBytes = 128 * 1024;
     private static readonly string PipeName = GetPipeName();
 
+    internal static void OpenExplorerFallback(string? path)
+    {
+        if (GetExplorerFallbackLocation(path) is not { } location) return;
+
+        // Launch Explorer explicitly so a user-defined folder verb cannot route the request back to Fjord.
+        // Explorer treats unquoted commas as separators and a trailing backslash before a closing quote specially.
+        var argument = location == FjordFilesWindow.ComputerLocation || location is [_, ':', '\\']
+            ? location
+            : $"\"{location.TrimEnd('\\')}\"";
+        ShellShortcuts.OpenSystemTool($"explorer.exe {argument}");
+    }
+
+    internal static string? GetExplorerFallbackLocation(string? path)
+    {
+        var input = path?.Trim().Trim('"');
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        if (FjordFilesWindow.IsComputerLocation(input)) return FjordFilesWindow.ComputerLocation;
+
+        try
+        {
+            var expanded = Path.IsPathFullyQualified(input) ? input : Environment.ExpandEnvironmentVariables(input);
+            var folder = Path.GetFullPath(expanded, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            return !folder.Contains('"') && Directory.Exists(folder) ? folder : null;
+        }
+        catch (Exception error) when (error is ArgumentException or IOException or NotSupportedException)
+        {
+            return null;
+        }
+    }
+
     internal static bool TrySend(string? path)
     {
         var bytes = Encoding.UTF8.GetBytes(path ?? string.Empty);
