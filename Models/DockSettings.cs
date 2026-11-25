@@ -271,7 +271,8 @@ public sealed record DockSettings(
     bool DynamicIslandEnabled = false,
     string? DynamicIslandBackgroundColor = null,
     double DynamicIslandOpacity = 1.0,
-    bool DynamicIslandAutoHide = false)
+    bool DynamicIslandAutoHide = false,
+    bool FjordFilesEnabled = true)
 {
     public const string DynamicIslandAllDisplays = "*";
     /// <summary>Effective animation state, suppressed while focus mode is active.</summary>
@@ -281,6 +282,9 @@ public sealed record DockSettings(
     /// <summary>Effective notification badge state, suppressed while focus mode is active.</summary>
     [JsonIgnore]
     public bool EffectiveNotificationBadgesEnabled => NotificationBadgesEnabled && !FocusModeEnabled;
+
+    [JsonIgnore]
+    public bool IsFjordFilesButtonVisible => FjordFilesEnabled && ShowFjordFilesButton;
 
     /// <summary>
     /// Parsed view of <see cref="PinnedTrayIcons"/>. Legacy <c>guid:</c>/<c>path:</c> strings and structured JSON

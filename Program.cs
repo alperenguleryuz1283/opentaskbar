@@ -14,7 +14,9 @@ public static class Program
     {
         var openFiles = args is ["--files"] or ["--files", _];
         var filesPath = openFiles ? args.ElementAtOrDefault(1) : null;
-        if (openFiles && FjordFilesActivation.TrySend(filesPath)) return;
+        var filesStore = openFiles ? new DockSettingsStore() : null;
+        var filesSettings = filesStore?.Load().Settings;
+        if (filesSettings is not null && (!filesSettings.FjordFilesEnabled || FjordFilesActivation.TrySend(filesPath))) return;
 
         // Watchdog and --restore paths log before App.OnStartup; initialize first so their
         // diagnostics are not silently dropped (shell recovery was previously invisible in log.txt).
@@ -27,18 +29,26 @@ public static class Program
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
         }
 
-        if (openFiles)
+        if (filesStore is not null && filesSettings is not null)
         {
-            UiText.Current.SetLanguage(new DockSettingsStore().Load().Settings.Language);
+            UiText.Current.SetLanguage(filesSettings.Language);
             var files = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
+            using var availability = new FjordFilesAvailability(filesStore, filesSettings.FjordFilesEnabled);
+            if (!availability.Refresh()) return;
+            availability.Changed += enabled =>
+            {
+                if (!enabled) FjordFilesWindow.CloseAll();
+            };
             files.Run(new FjordFilesWindow(filesPath));
             return;
         }
 
         if (args is ["--fjord-bar"])
         {
-            UiText.Current.SetLanguage(new DockSettingsStore().Load().Settings.Language);
-            FjordBarHost.Run();
+            var store = new DockSettingsStore();
+            var settings = store.Load().Settings;
+            UiText.Current.SetLanguage(settings.Language);
+            FjordBarHost.Run(store, settings.FjordFilesEnabled);
             return;
         }
 

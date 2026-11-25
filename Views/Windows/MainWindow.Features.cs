@@ -116,7 +116,7 @@ public partial class MainWindow
     /// <summary>Visibility for the permanent shell buttons; their position comes from the unified dock order.</summary>
     private void ApplyShellButtons()
     {
-        FjordFilesButton.Visibility = _preferences.Current.ShowFjordFilesButton
+        FjordFilesButton.Visibility = _preferences.Current.IsFjordFilesButtonVisible
             ? Visibility.Visible : Visibility.Collapsed;
         TaskViewButton.Visibility = _preferences.Current.ShowTaskViewButton
             ? Visibility.Visible : Visibility.Collapsed;
@@ -238,6 +238,7 @@ public partial class MainWindow
 
     private void OpenFjordFiles_Click(object sender, RoutedEventArgs e)
     {
+        if (!_preferences.Current.FjordFilesEnabled) return;
         var display = _source is null ? null : DisplayService.GetDisplay(DisplayService.GetWindowMonitor(_source.Handle));
         FjordFilesWindow.Open(null, display);
     }

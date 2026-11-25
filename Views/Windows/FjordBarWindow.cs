@@ -35,7 +35,7 @@ internal sealed partial class FjordBarWindow : Window
     private bool _repositionQueued;
     private bool _closed;
 
-    internal FjordBarWindow(DisplayInfo display, Action close)
+    internal FjordBarWindow(DisplayInfo display, Action close, FjordFilesAvailability files)
     {
         _display = display;
         Title = FjordBarText.Get(display.IsPrimary ? "PrimaryBar" : "SecondaryBar");
@@ -67,10 +67,15 @@ internal sealed partial class FjordBarWindow : Window
             Background = Panel, Foreground = Ink, BorderBrush = Hairline, BorderThickness = new Thickness(1),
             Template = WorkspaceMenuTemplate
         };
-        AddMenu(workspaceMenu, FjordBarText.Get("Files"), () =>
+        var filesMenuItem = AddMenu(workspaceMenu, FjordBarText.Get("Files"), () =>
         {
-            if (!FjordFilesActivation.TrySend(null)) FjordFilesWindow.Open(null, _display);
+            if (files.Refresh() && !FjordFilesActivation.TrySend(null)) FjordFilesWindow.Open(null, _display);
         });
+        void UpdateFilesMenu(bool enabled) => filesMenuItem.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        UpdateFilesMenu(files.Enabled);
+        workspaceMenu.Opened += (_, _) => UpdateFilesMenu(files.Refresh());
+        files.Changed += UpdateFilesMenu;
+        Closed += (_, _) => files.Changed -= UpdateFilesMenu;
         AddMenu(workspaceMenu, FjordBarText.Get("CloseBar"), close);
         workspace.ContextMenu = workspaceMenu;
         workspace.Click += (_, _) => workspaceMenu.IsOpen = true;
@@ -194,11 +199,12 @@ internal sealed partial class FjordBarWindow : Window
         base.OnClosed(e);
     }
 
-    private static void AddMenu(ContextMenu menu, string title, Action action)
+    private static MenuItem AddMenu(ContextMenu menu, string title, Action action)
     {
         var item = new MenuItem { Header = title, Foreground = Ink, Template = WorkspaceItemTemplate };
         item.Click += (_, _) => action();
         menu.Items.Add(item);
+        return item;
     }
 
     private static ControlTemplate BuildWorkspaceMenuTemplate()

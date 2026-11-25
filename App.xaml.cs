@@ -128,7 +128,10 @@ public partial class App : Application
         if (!IsDev && !IsInspection)
         {
             _fjordFilesActivation = new CancellationTokenSource();
-            _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() => FjordFilesWindow.Open(path)),
+            _ = FjordFilesActivation.Listen(path => Dispatcher.InvokeAsync(() =>
+            {
+                if (Preferences.Current.FjordFilesEnabled) FjordFilesWindow.Open(path);
+            }),
                 _fjordFilesActivation.Token);
         }
         StartupStopwatch.Mark("MainWindow shown (first paint pending)");
@@ -173,7 +176,11 @@ public partial class App : Application
     private void Preferences_Changed(object? sender, EventArgs e)
     {
         // A saved theme change rebuilds the palette; re-derive the Windows colors for the new mode.
-        Dispatcher.BeginInvoke(new Action(ApplyWindowsPalette));
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (!Preferences.Current.FjordFilesEnabled) FjordFilesWindow.CloseAll();
+            ApplyWindowsPalette();
+        }));
     }
 
     private void PaletteListener_Changed(object? sender, EventArgs e)

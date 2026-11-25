@@ -70,6 +70,7 @@ AppLaunchChecks();
 TrayListChecks();
 checks += PinnedTrayChecks.RunHeadless();
 ShellTokenChecks();
+checks += FjordFilesFeatureChecks.RunSettings();
 LiveDragMathChecks();
 DragDropAndShowDesktopChecks();
 DockGroupsProfilesAndPinsChecks();
@@ -94,6 +95,7 @@ if (!headless)
 {
     checks += StaCheckRunner.Run(TraySourceChecks.RunUi);
     checks += StaCheckRunner.Run(DockGestureChecks.RunUi);
+    checks += StaCheckRunner.Run(FjordFilesFeatureChecks.RunUi);
 }
 Console.WriteLine($"{checks} behavior checks passed.");
 

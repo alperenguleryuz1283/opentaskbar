@@ -67,7 +67,7 @@ internal static class DockItemOrdering
         var lead = new List<string>();
         if (settings.StartPlacement != StartButtonPlacement.Hidden) lead.Add("start");
         if (settings.ShowSearchButton) lead.Add("search");
-        if (settings.ShowFjordFilesButton) lead.Add("fjord-files");
+        if (settings.IsFjordFilesButtonVisible) lead.Add("fjord-files");
         if (settings.ShowTaskViewButton) lead.Add("taskview");
 
         var result = new List<string>(lead);

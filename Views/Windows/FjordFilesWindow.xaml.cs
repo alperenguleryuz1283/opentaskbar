@@ -58,6 +58,12 @@ public partial class FjordFilesWindow : Window
         NativeWindowTracker.Activate(new WindowInteropHelper(window).Handle);
     }
 
+    internal static void CloseAll()
+    {
+        foreach (var window in Application.Current.Windows.OfType<FjordFilesWindow>().ToArray())
+            window.Close();
+    }
+
     private void CenterOnDisplay(DisplayInfo display)
     {
         WindowStartupLocation = WindowStartupLocation.Manual;

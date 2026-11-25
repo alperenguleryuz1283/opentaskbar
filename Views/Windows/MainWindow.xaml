@@ -53,7 +53,7 @@
             <MenuItem Header="{local:Loc CheckForUpdates}" Icon="{StaticResource IconRefresh}" Tag="UpdateMenu" Click="CheckUpdates_Click" />
             <MenuItem Header="{local:Loc TaskManager}" Icon="{StaticResource IconTaskManager}" Click="OpenTaskManager_Click" />
             <Separator />
-            <MenuItem Header="{local:FjordLoc Title}" Icon="{StaticResource IconFolder}" Click="OpenFjordFiles_Click" />
+            <MenuItem Header="{local:FjordLoc Title}" Icon="{StaticResource IconFolder}" Tag="FjordFilesMenu" Click="OpenFjordFiles_Click" />
             <MenuItem Header="{local:Loc OpenFileExplorer}" Icon="{StaticResource IconFolder}" Click="OpenFileExplorer_Click" />
             <MenuItem Header="{local:Loc OpenRunDialog}" Icon="{StaticResource IconSearch}" Click="OpenRunDialog_Click" />
             <MenuItem Header="{local:Loc OpenTerminal}" Icon="{StaticResource IconTerminal}" Click="OpenTerminal_Click" />
