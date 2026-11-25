@@ -170,6 +170,12 @@ dotnet run --project tests/OpenTaskbar.Tests/OpenTaskbar.Tests.csproj -- --headl
 
 The full suite verifies WPF controls and therefore needs a Windows desktop session. The `--headless` mode skips those visual checks and runs the fast, side-effect-free logic tests.
 
+### Fjord top bar
+
+To open the optional top bar, run `OpenTaskbar.exe --fjord-bar` or `dotnet run --project OpenTaskbar.csproj -- --fjord-bar`. The bar opens on each display and can be closed from its desktop menu. The same menu opens Fjord Files.
+
+Click the Wi-Fi icon to scan, connect, or disconnect. For a new network, **Remember network** saves a per-user Windows Wi-Fi profile after a successful connection. Saved profiles support manual reconnection with the stored credentials. On Windows versions that restrict nearby Wi-Fi access, the panel reports when Windows location permissions block the scan.
+
 ---
 
 ## Configuration

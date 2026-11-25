@@ -35,6 +35,13 @@ public static class Program
             return;
         }
 
+        if (args is ["--fjord-bar"])
+        {
+            UiText.Current.SetLanguage(new DockSettingsStore().Load().Settings.Language);
+            FjordBarHost.Run();
+            return;
+        }
+
         var app = new App();
         app.InitializeComponent();
         // Used by Windows CI to verify the published EXE can load WPF without starting a dock

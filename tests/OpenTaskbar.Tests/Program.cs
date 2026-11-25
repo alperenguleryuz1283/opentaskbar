@@ -165,6 +165,21 @@ void ShellTokenChecks()
     Check(FjordFilesText.Get("Computer", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) == "Bu Bilgisayar"
         && FjordFilesText.Get("Computer", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) == "This PC",
         "Fjord must use its Turkish strings when available and English otherwise.");
+
+    var originalLanguage = UiText.Current.Language;
+    try
+    {
+        UiText.Current.SetLanguage(LanguageCatalog.FromCulture(CultureInfo.GetCultureInfo("tr-TR")));
+        Check(OpenTaskbar.FjordBarText.Get("Disconnect") == "Bağlantıyı kes",
+            "The Fjord top bar must load the Turkish Wi-Fi resources.");
+        UiText.Current.SetLanguage(LanguageCatalog.FromCulture(CultureInfo.GetCultureInfo("de-DE")));
+        Check(OpenTaskbar.FjordBarText.Get("Disconnect") == "Disconnect",
+            "The Fjord top bar must fall back to English when localized Wi-Fi resources are unavailable.");
+    }
+    finally
+    {
+        UiText.Current.SetLanguage(originalLanguage);
+    }
 }
 
 // Live reordering (#130): pure insertion-index and neighbour-slide math.
